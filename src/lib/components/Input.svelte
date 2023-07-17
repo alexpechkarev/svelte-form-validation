@@ -29,6 +29,8 @@
 	 */
 	export let validityClass;
 	export let onInput = (/** @type {string} */ value) => {};
+
+	
 </script>
 
 <div class:pending class={`${validityClass}`}>
@@ -41,7 +43,7 @@
 
 		<div>
 			{#if messages.length}
-				<span class="text-sm text-red-600">{messages[0]}</span>
+				<span id="msg" class="text-sm text-red-600">{messages[0]}</span>
 			{/if}
 		</div>
 	</div>
@@ -62,7 +64,7 @@
 				<Icon src={CheckCircle} class="h-5 w-5 text-green-500" solid />
 			{/if}
 			{#if pending && validityClass !== 'error' && validityClass !== 'success'}
-				<Jumper size="30" color="#FF3E00" unit="px" duration="1s" />
+				<Jumper size="30" color="#3253d7" unit="px" duration="1s" />
 			{/if}
 		</div>
 	</div>
@@ -76,13 +78,40 @@
 			var(--color-success);
 		color: var(--color-success);
 	}
+	.success input:focus {
+		box-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width))
+			var(--color-success);
+		--tw-ring-opacity: 1;
+		--tw-ring-color: rgb(var(--color-success) / var(--tw-ring-opacity));
+	}
 
 	.warning input {
 		/* border: 1px solid var(--color-warning); */
-		box-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width))
+		box-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width))
 			var(--color-warning);
 		color: var(--color-warning);
 	}
+
+	.warning #msg {
+		/* border: 1px solid var(--color-warning); */
+		/* box-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width))
+			var(--color-warning); */
+		color: var(--color-warning);
+	}
+
+
+	.warning input:focus {
+		box-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width))
+			var(--color-warning);
+		--tw-ring-opacity: 1;
+		--tw-ring-color: rgb(var(--color-warning) / var(--tw-ring-opacity));
+	}	
+	.error #msg {
+		/* border: 1px solid var(--color-error); */
+		/* box-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width))
+			var(--color-error) !important; */
+		color: var(--color-error) !important;;
+	}	
 
 	.error input {
 		/* border: 1px solid var(--color-error); */
@@ -90,22 +119,10 @@
 			var(--color-error) !important;
 		color: var(--color-error) !important;;
 	}
-	.warning input:focus {
-		box-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width))
-			var(--color-warning);
-		--tw-ring-opacity: 1;
-		--tw-ring-color: rgb(var(--color-warning) / var(--tw-ring-opacity));
-	}
 	.error input:focus {
 		box-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width))
-			var(--color-error);
-		--tw-ring-opacity: 1;
-		--tw-ring-color: rgb(var(--color-error) / var(--tw-ring-opacity));
-	}
-	.success input:focus {
-		box-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width))
-			var(--color-success);
-		--tw-ring-opacity: 1;
-		--tw-ring-color: rgb(var(--color-success) / var(--tw-ring-opacity));
+			var(--color-error) !important;
+		--tw-ring-opacity: 1 !important;
+		--tw-ring-color: rgb(var(--color-error) / var(--tw-ring-opacity)) !important;
 	}
 </style>

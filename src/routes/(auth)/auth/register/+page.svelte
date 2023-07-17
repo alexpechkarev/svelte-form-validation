@@ -1,6 +1,5 @@
-<script>
-	// @ts-nocheck
-
+<script lang="ts">
+	import type { SuiteResult } from 'vest';
 	//https://www.youtube.com/watch?v=X2PuiawaGV4
 	//https://codesandbox.io/s/svelte-vest-5-imnq9z?file=/Form.svelte:1753-2159
 	import { enhance, applyAction } from '$app/forms';
@@ -9,33 +8,30 @@
 	import Input from '$lib/components/Input.svelte';
 	import { Button, Spinner } from 'flowbite-svelte';
 
-	export let form;
+	//export let form;
 
-	let formState = {};
-	let namePending = false;
+	let formState: { [name: string]: string; email: string } = {
+		name: '',
+		email: ''
+	};
 	let emailPending = false;
+	let isProcessing = false;
 	let result = suite.get();
 
-	const handleChange = (field) => {
+	// Hadle the field input
+	const handleChange = (field: string) => {
 		result = suite(formState, field);
-
-		if (field === 'name') {
-			namePending = true;
-		}
 
 		if (field === 'email') {
 			emailPending = true;
-		}		
+		}
 
-		result.done((res) => {
-			namePending = false;
+		result.done('email', (res: SuiteResult) => {
 			emailPending = false;
 			result = res;
 		});
+
 	};
-
-
-	
 
 	$: cn = classnames(result, {
 		//untested: 'is-untested', // will only be applied if the provided field did not run yet
@@ -45,6 +41,7 @@
 		warning: 'warning' // will only be applied if the provided field ran at least once and has a warning
 	});
 	$: disabled = !result.isValid();
+
 </script>
 
 <svelte:head>
@@ -67,29 +64,26 @@
 
 		<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
 			<div class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
-				{#if form?.error}
-					<p class="error">{form.error}</p>
-					<pre>{JSON.stringify(form.errors)}</pre>
-				{/if}
-
 				<form
 					class="space-y-6"
 					use:enhance={({ formElement, formData, action, cancel, submitter }) => {
-						// `formElement` is this `<form>` element
-						// `formData` is its `FormData` object that's about to be submitted
-						// `action` is the URL to which the form is posted
-						// calling `cancel()` will prevent the submission
-						// `submitter` is the `HTMLElement` that caused the form to be submitted
+						isProcessing = true;
 
 						return async ({ result, update }) => {
-							for (const [key, value] of Object.entries(formState)) {
-								// console.log(`${key}: ${value}`);
-								if (formData.has(key)) {
-									formState[key] = value;
-									handleChange(key);
+							await update();
+							// response has an error
+							if(result.status == 422){
+								
+								for (const [key, value] of Object.entries(formState)) {
+									if (formData.has(key)) {
+										formState[key] = value;
+										handleChange(key);
+									}
 								}
+								isProcessing = false;
+							}else{
+								suite.reset();
 							}
-							update();
 						};
 					}}
 					method="POST"
@@ -104,9 +98,8 @@
 								autocomplete="given-name"
 								bind:value={formState.name}
 								onInput={handleChange}
-								pending={namePending}
 								validityClass={cn('name')}
-								messages={result.getErrors('name')}
+								messages={result.getErrors('name').concat(result.getWarnings('name'))}
 							/>
 						</div>
 					</div>
@@ -128,11 +121,28 @@
 						</div>
 					</div>
 
+					<!-- Password -->
+					<div>
+						<div class="mt-2">
+							<Input
+								name="password"
+								type="password"
+								label="Password"
+								bind:value={formState.password}
+								onInput={handleChange}
+								validityClass={cn('password')}
+								messages={result.getErrors('password').concat(result.getWarnings('password'))}
+							/>
+						</div>
+					</div>					
+
 					<!-- Submit button -->
 					<div>
-						<Button type="submit" class="w-full" color="blue" {disabled}>
-							<Spinner class="mr-3" size="4" color="white" />
-							Register
+						<Button type="submit" class="w-full" color="blue" disabled={disabled || isProcessing}>
+							<div class:hidden={!isProcessing}>
+								<Spinner class="mr-3" size="4" color="white" /> Processing...
+							</div>
+							<div class={isProcessing ? 'hidden' : 'inline-block'}>Register</div>
 						</Button>
 					</div>
 
@@ -199,7 +209,7 @@
 
 	form {
 		--color-error: rgb(220 38 38);
-		--color-warning: rgb(234 88 12);
+		--color-warning: rgb(249 115 22);
 		--color-success: rgb(22 163 74);
 		--color-content-active: #5081a6;
 		--color-content-semi: #89b8dd;

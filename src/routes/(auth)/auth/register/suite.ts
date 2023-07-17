@@ -1,4 +1,4 @@
-import { create, test, enforce, only, skipWhen, warn, include } from 'vest';
+import { create, test, enforce, only, include, warn } from 'vest';
 //https://github.com/validatorjs/validator.js
 import isEmail from 'validator/lib/isEmail';
 //import isMobilePhone from 'validator/es/lib/isMobilePhone';
@@ -7,10 +7,11 @@ import wait from 'wait';
 
 enforce.extend({ isEmail });
 
-const suite = create((data = {}, currentField) => {
+const suite = create((data = {}, currentField = undefined) => {
 
-	// console.log(currentField);
-	only(currentField);
+	if(typeof currentField !== 'undefined'){
+		only(currentField);
+	}
 	include('confirm').when('password');
 
 	test('name', 'Name is required', () => {
@@ -21,28 +22,29 @@ const suite = create((data = {}, currentField) => {
 		enforce(data.name).longerThan(2);
 	});
 
-	test.memo('name', 'name already taken', async () => await doesUserExist(data.name), [data.name]);
-
+	
 	test('email', 'Email is required', () => {
 		enforce(data.email).isNotBlank();
 	});
-
+	
 	test('email', 'email must be valid email address', () => {
-        enforce(data.email).isEmail(); 
+		enforce(data.email).isEmail(); 
 	});    
 
-	// test('password', 'Password is required', () => {
-	// 	enforce(data.password).isNotEmpty();
-	// });
+	test.memo('email', 'email address already registered', async () => await doesUserExist(data.email), [data.email]);
 
-	// test('password', 'Password must be at laest 5 chars', () => {
-	// 	enforce(data.password).longerThanOrEquals(5);
-	// });
+	test('password', 'Password is required', () => {
+		enforce(data.password).isNotEmpty();
+	});
 
-	// test('password', 'Password is weak. Maybe add a number?', () => {
-	// 	warn();
-	// 	enforce(data.password).matches(/[0-9]/);
-	// });
+	test('password', 'Password must be at least 5 chars', () => {
+		enforce(data.password).longerThanOrEquals(5);
+	});
+
+	test('password', 'Password is weak. Maybe add a number?', () => {
+		warn();
+		enforce(data.password).matches(/[0-9]/);
+	});
 
 	// skipWhen(!data.confirm, () => {
 	// 	test('confirm', 'Passwords do not match', () => {
@@ -57,13 +59,15 @@ const suite = create((data = {}, currentField) => {
 
 export default suite;
 
+
 /**
- * @param {string} name
+ * @param {string} email
  */
-async function doesUserExist(name: string) {
+async function doesUserExist(email: string) {
 	await wait(1000);
 
-	console.log('checking if user exists');
+	console.log('checking if user email address exists');
 	// fake taken username.
-	enforce(parseInt(btoa(name), 36) % 3).notEquals(0);
+	enforce(parseInt(btoa(email), 36) % 3).notEquals(0);
 }
+
