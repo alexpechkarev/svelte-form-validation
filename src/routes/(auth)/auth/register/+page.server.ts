@@ -8,7 +8,7 @@ export async function load({ cookies, request }) {
 	// if (!id) {
 	// 	cookies.set('userid', crypto.randomUUID(), { path: '/' });
 	// }
-
+	//"token": "1|8gNTW03aTGa8iYOgJwREtGjRfNiNWVSmA0GRl06I"
 	return {
 		data: 'Export data from server'
 	};
